@@ -37,9 +37,11 @@ crosswalk = crosswalk[['RegionID', 'cbsa_code']].drop_duplicates()
 
 #%% Merge buy and rent data
 print("#%% Merge buy and rent data")
-buy_long = buy.melt(id_vars=['RegionID', 'RegionName'], var_name='date', value_name='price')
-rent_long = rent.melt(id_vars=['RegionID', 'RegionName'], var_name='date', value_name='rent')
-df = pd.merge(buy_long, rent_long, on=['RegionID', 'RegionName', 'date'], how='inner')
+buy_id_vars = ['RegionID', 'SizeRank', 'RegionName', 'RegionType', 'StateName']
+rent_id_vars = ['RegionID', 'SizeRank', 'RegionName', 'RegionType', 'StateName']
+buy_long = buy.melt(id_vars=buy_id_vars, var_name='date', value_name='price')
+rent_long = rent.melt(id_vars=rent_id_vars, var_name='date', value_name='rent')
+df = pd.merge(buy_long, rent_long, on=buy_id_vars + ['date'], how='inner')
 
 #%% Merge with crosswalk and population
 print("#%% Merge with crosswalk and population")

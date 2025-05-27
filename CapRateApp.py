@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import requests
+import datetime
 
 #%% Load Zillow buy and rent data
 print("#%% Load Zillow buy and rent data")
@@ -50,40 +51,34 @@ df = pd.merge(df, census, on='cbsa_code', how='left')
 
 #%% Convert date column and determine latest reliable date
 print("#%% Convert date column and determine latest reliable date")
-df['date'] = pd.to_datetime(df['date']) # Convert all dates first
+df['date'] = pd.to_datetime(df['date'])
 
-# Create a temporary df for calculating latest_date, ensuring it's from rows with data
+# Create a temporary df for calculating latest_date, ensuring it's from rows with actual positive data
 df_for_date_calc = df[
-    df['price'].notnull() &
-    df['rent'].notnull() &
-    (df['RegionType'] == 'msa') # Ensure we consider only MSA for latest_date context
+    (df['price'].notnull()) & (df['price'] > 0) &  # Ensure positive price
+    (df['rent'].notnull()) & (df['rent'] > 0) &    # Ensure positive rent
+    (df['RegionType'] == 'msa')
 ].copy()
 
 if df_for_date_calc.empty:
-    print("Warning: No data available after filtering for price, rent, and MSA to determine latest_date.")
+    print("Warning: No data available after filtering for positive price/rent and MSA to determine latest_date.")
     latest_date = None
-    df_latest = pd.DataFrame() # Ensure df_latest is empty
+    df_latest = pd.DataFrame() 
 else:
     latest_date = df_for_date_calc['date'].max()
-    # Debug print, can be removed later
-    # print(f"Calculated latest_date with data: {latest_date}") 
-
-    # Now filter the original df using this reliable latest_date
-    # df['date'] is already datetime from the conversion above
+    
+    # Now filter the original df using this reliable latest_date and ensuring positive values
     df_latest = df[
         (df['date'] == latest_date) & 
         (df['RegionType'] == 'msa') &
         (df['population'].notnull()) &
-        # Price and rent notnull checks are implicitly handled by how latest_date was derived from df_for_date_calc,
-        # but keeping them for absolute safety if df might have other rows for latest_date (e.g. different RegionType)
-        # that were not in df_for_date_calc but share the same latest_date.
-        (df['price'].notnull()) &
-        (df['rent'].notnull())
+        (df['price'].notnull()) & (df['price'] > 0) & # Ensure positive price
+        (df['rent'].notnull()) & (df['rent'] > 0)     # Ensure positive rent
     ].copy()
-    
+
+    # It's good practice to check if df_latest became empty after all filters
     # if df_latest.empty:
-        # Debug print, can be removed later
-        # print(f"Warning: df_latest is empty even with latest_date={latest_date}. Check population data or other merge/filter conditions.")
+    #     print(f"Warning: df_latest is empty for date {latest_date} after all filters including population and positive price/rent.")
 
 #%% Calculate cap rate
 print("#%% Calculate cap rate")
@@ -92,12 +87,13 @@ if not df_latest.empty:
     df_latest['cap_rate'] = df_latest['rent'] * 12 / df_latest['price']
 else:
     # If df_latest is empty, create an empty 'cap_rate' column to prevent errors later
-    # if other parts of the code expect this column to exist.
     df_latest['cap_rate'] = pd.Series(dtype='float64')
 
 #%% Streamlit UI: Title and dropdown
 print("#%% Streamlit UI: Title and dropdown")
+VERSION_TIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
 st.set_page_config(page_title="Cap Rate Monitor", layout="wide")
+st.caption(f"Version: {VERSION_TIMESTAMP}")
 st.title("Cap Rate Monitor")
 city = st.selectbox("Highlight a city:", sorted(df_latest['RegionName'].unique()))
 

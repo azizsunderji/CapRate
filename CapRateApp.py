@@ -5,11 +5,27 @@ import streamlit as st
 import plotly.express as px
 import requests
 import datetime
+import os # Import os module
 
 #%% Load Zillow buy and rent data
 print("#%% Load Zillow buy and rent data")
-buy = pd.read_csv("Metro_zhvi_uc_sfr_tier_0.33_0.67_sm_sa_month_SFH.csv", encoding='latin-1')
-rent = pd.read_csv("Metro_zori_uc_sfr_sm_month_SFR.csv", encoding='latin-1')
+buy_file_path = "Metro_zhvi_uc_sfr_tier_0.33_0.67_sm_sa_month_SFH.csv"
+rent_file_path = "Metro_zori_uc_sfr_sm_month_SFR.csv"
+
+print(f"Checking buy file: {buy_file_path}")
+if os.path.exists(buy_file_path):
+    print(f"Buy file size: {os.path.getsize(buy_file_path)} bytes")
+else:
+    print(f"Buy file NOT FOUND at {buy_file_path}")
+
+print(f"Checking rent file: {rent_file_path}")
+if os.path.exists(rent_file_path):
+    print(f"Rent file size: {os.path.getsize(rent_file_path)} bytes")
+else:
+    print(f"Rent file NOT FOUND at {rent_file_path}")
+
+buy = pd.read_csv(buy_file_path, encoding='latin-1')
+rent = pd.read_csv(rent_file_path, encoding='latin-1')
 
 #%% Load crosswalk file
 print("#%% Load crosswalk file")

@@ -48,21 +48,52 @@ print("#%% Merge with crosswalk and population")
 df = pd.merge(df, crosswalk, on='RegionID', how='left')
 df = pd.merge(df, census, on='cbsa_code', how='left')
 
-#%% Convert date column and filter for latest month
-print("#%% Convert date column and filter for latest month")
-df['date'] = pd.to_datetime(df['date'])
-latest_date = df['date'].max()
-df_latest = df[
-    (df['date'] == latest_date) & 
-    (df['RegionType'] == 'msa') &
-    (df['population'].notnull()) &
-    (df['price'].notnull()) &
-    (df['rent'].notnull())
+#%% Convert date column and determine latest reliable date
+print("#%% Convert date column and determine latest reliable date")
+df['date'] = pd.to_datetime(df['date']) # Convert all dates first
+
+# Create a temporary df for calculating latest_date, ensuring it's from rows with data
+df_for_date_calc = df[
+    df['price'].notnull() &
+    df['rent'].notnull() &
+    (df['RegionType'] == 'msa') # Ensure we consider only MSA for latest_date context
 ].copy()
+
+if df_for_date_calc.empty:
+    print("Warning: No data available after filtering for price, rent, and MSA to determine latest_date.")
+    latest_date = None
+    df_latest = pd.DataFrame() # Ensure df_latest is empty
+else:
+    latest_date = df_for_date_calc['date'].max()
+    # Debug print, can be removed later
+    # print(f"Calculated latest_date with data: {latest_date}") 
+
+    # Now filter the original df using this reliable latest_date
+    # df['date'] is already datetime from the conversion above
+    df_latest = df[
+        (df['date'] == latest_date) & 
+        (df['RegionType'] == 'msa') &
+        (df['population'].notnull()) &
+        # Price and rent notnull checks are implicitly handled by how latest_date was derived from df_for_date_calc,
+        # but keeping them for absolute safety if df might have other rows for latest_date (e.g. different RegionType)
+        # that were not in df_for_date_calc but share the same latest_date.
+        (df['price'].notnull()) &
+        (df['rent'].notnull())
+    ].copy()
+    
+    # if df_latest.empty:
+        # Debug print, can be removed later
+        # print(f"Warning: df_latest is empty even with latest_date={latest_date}. Check population data or other merge/filter conditions.")
 
 #%% Calculate cap rate
 print("#%% Calculate cap rate")
-df_latest['cap_rate'] = df_latest['rent'] * 12 / df_latest['price']
+# Ensure df_latest is not empty before trying to calculate cap_rate
+if not df_latest.empty:
+    df_latest['cap_rate'] = df_latest['rent'] * 12 / df_latest['price']
+else:
+    # If df_latest is empty, create an empty 'cap_rate' column to prevent errors later
+    # if other parts of the code expect this column to exist.
+    df_latest['cap_rate'] = pd.Series(dtype='float64')
 
 #%% Streamlit UI: Title and dropdown
 print("#%% Streamlit UI: Title and dropdown")

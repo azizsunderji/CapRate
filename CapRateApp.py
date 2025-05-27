@@ -48,8 +48,9 @@ print("#%% Merge with crosswalk and population")
 df = pd.merge(df, crosswalk, on='RegionID', how='left')
 df = pd.merge(df, census, on='cbsa_code', how='left')
 
-#%% Filter for latest month and MSAs with population data
-print("#%% Filter for latest month and MSAs with population data")
+#%% Convert date column and filter for latest month
+print("#%% Convert date column and filter for latest month")
+df['date'] = pd.to_datetime(df['date'])
 latest_date = df['date'].max()
 df_latest = df[(df['date'] == latest_date) & (~df['population'].isna())]
 

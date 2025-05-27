@@ -7,8 +7,8 @@ import requests
 
 #%% Load Zillow buy and rent data
 print("#%% Load Zillow buy and rent data")
-buy = pd.read_csv("Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv", encoding='latin-1')
-rent = pd.read_csv("Metro_zori_sm_month.csv", encoding='latin-1')
+buy = pd.read_csv("Metro_zhvi_uc_sfr_tier_0.33_0.67_sm_sa_month_SFH.csv", encoding='latin-1')
+rent = pd.read_csv("Metro_zori_uc_sfr_sm_month_SFR.csv", encoding='latin-1')
 
 #%% Load crosswalk file
 print("#%% Load crosswalk file")

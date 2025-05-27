@@ -52,7 +52,13 @@ df = pd.merge(df, census, on='cbsa_code', how='left')
 print("#%% Convert date column and filter for latest month")
 df['date'] = pd.to_datetime(df['date'])
 latest_date = df['date'].max()
-df_latest = df[(df['date'] == latest_date) & (~df['population'].isna())]
+df_latest = df[
+    (df['date'] == latest_date) & 
+    (df['RegionType'] == 'msa') &
+    (df['population'].notnull()) &
+    (df['price'].notnull()) &
+    (df['rent'].notnull())
+].copy()
 
 #%% Calculate cap rate
 print("#%% Calculate cap rate")

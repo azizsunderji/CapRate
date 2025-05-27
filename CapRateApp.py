@@ -14,6 +14,10 @@ rent = pd.read_csv("Metro_zori_uc_sfr_sm_month_SFR.csv", encoding='latin-1')
 print("#%% Load crosswalk file")
 crosswalk = pd.read_csv("CountyCrossWalk_Zillow.csv", encoding='latin-1')
 
+#%% Check crosswalk columns
+print("#%% Check crosswalk columns")
+print(crosswalk.columns)
+
 #%% Get Census MSA population data
 print("#%% Get Census MSA population data")
 census_url = "https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/metro/totals/cbsa-est2023-alldata.csv"
@@ -27,7 +31,7 @@ census = census[['cbsa_code', 'population']]
 
 #%% Prepare crosswalk for merging
 print("#%% Prepare crosswalk for merging")
-crosswalk['cbsa_code'] = crosswalk['CBSA Code'].astype(str).str.zfill(5)
+crosswalk['cbsa_code'] = crosswalk['CBSACode'].astype(str).str.zfill(5)
 crosswalk = crosswalk[['RegionID', 'cbsa_code']].drop_duplicates()
 
 #%% Merge buy and rent data

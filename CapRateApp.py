@@ -31,6 +31,7 @@ census = census[['cbsa_code', 'population']]
 
 #%% Prepare crosswalk for merging
 print("#%% Prepare crosswalk for merging")
+crosswalk = crosswalk.rename(columns={'MetroRegionID_Zillow': 'RegionID'})
 crosswalk['cbsa_code'] = crosswalk['CBSACode'].astype(str).str.zfill(5)
 crosswalk = crosswalk[['RegionID', 'cbsa_code']].drop_duplicates()
 

@@ -1,3 +1,13 @@
 streamlit
 plotly
 pandas
+numpy
+matplotlib
+seaborn
+geopandas
+pyarrow
+folium
+shapely
+pyproj
+requests
+nbformat>=4.2.0
